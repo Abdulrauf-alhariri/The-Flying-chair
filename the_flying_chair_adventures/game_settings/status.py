@@ -40,7 +40,7 @@ class Health:
         self.screen = screen
         self.position_x = position_x
         self.position_y = position_y
-        self.health_length = 399
+        self.health_length = 400
 
     def draw_health(self):
         height = 30
@@ -58,7 +58,16 @@ class Health:
 
     def update_bar(self):
         if self.health_length >= 0:
-            self.health_length -= 50
+            self.health_length -= 25
 
     def reset_bar(self):
         self.health_length = 400
+
+    # This method is used to recover the players health
+    def recover_hp(self):
+        if self.health_length + 200 > self.health_length:
+            self.health_length += 200
+
+        else:
+            availble = 400 - self.health_length
+            self.health_length += availble

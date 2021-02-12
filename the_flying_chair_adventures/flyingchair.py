@@ -6,7 +6,7 @@ import time
 
 
 # Importing the settings that are responsible for the game
-from game_settings.mine_manager import MineManager
+from game_settings.mine_manager import MineManager, BlobManager
 from game_settings.status import Points, Health
 
 
@@ -33,9 +33,12 @@ mine_manager = MineManager(screen, mine_sprite)
 # Blob sprite
 blob_sprite = pg.image.load(
     "C:\\The-flying-chair-adventures-main\\game_images\\blob_sprite.png")
+blob_manager = BlobManager(screen, blob_sprite)
+
 
 # Håll koll på poäng!
 poäng = Points(screen)
+
 
 # Håll koll på hälsan!
 player_hp = Health(screen, 750, 25)
@@ -109,6 +112,8 @@ def reset_game():
 # Game sounds
 damage_sound3 = pg.mixer.Sound(
     "C:\\The-flying-chair-adventures-main\\Game_sounds\\hit_mine3.wav")
+points_sound3 = pg.mixer.Sound(
+    "C:\\The-flying-chair-adventures-main\\Game_sounds\\hit_point3.wav")
 
 
 # Spel-loopen
@@ -116,11 +121,6 @@ damage_sound3 = pg.mixer.Sound(
 # Uppdatera game state
 # Rita ut på skärmen
 while True:
-
-    # if hp == 0:
-    #     reset_game()
-    #     player_hp.reset_bar()
-    #     poäng.reset_points()
 
     if gamestate == 'ready!':
         for event in pg.event.get():
@@ -137,8 +137,11 @@ while True:
     elif gamestate == "running":
 
         # Create mine
-        if random.randint(1, 50) == 1:
+        if random.randint(1, 100) == 1:
             mine_manager.create_mine()
+
+        if random.randint(1, 150) == 1:
+            blob_manager.create_blob()
 
         # For-loop - den där get() ger alltså en LISTA med händelser. Kolla vilken TYP
         for event in pg.event.get():
@@ -251,6 +254,18 @@ while True:
                 screen.fill((179, 9, 9))
                 screen.fill((0, 0, 0))
 
+        # Här gör vi samma sak som med minor
+        for blob in blob_manager.blobs:
+            if player_check_hit(blob.hitbox_blob()):
+                blob_manager.remove_blob(blob)
+                poäng.update_points()
+                points_sound3.play()
+
+        # If the points are dividid with 50 so the players hp will
+        # be recovered
+        # if poäng.points != 0 and poäng.points % 50 == 0:
+        #     player_hp.recover_hp()
+
         # player hp
         hp = player_hp.health_length
 
@@ -261,6 +276,7 @@ while True:
 
         draw_player()
         mine_manager.draw()
+        blob_manager.draw_blob()
         poäng.draw_points()
         player_hp.draw_health()
         Clock.tick(1000)
@@ -273,3 +289,4 @@ while True:
             player_hp.reset_bar()
             poäng.reset_points()
             mine_manager.reset_minor()
+            blob_manager.reset_blob()
