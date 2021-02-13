@@ -23,7 +23,7 @@ class MineManager:
     def create_mine(self):
         # Värden för den nya minan
         position_x = random.randint(0, 1200)
-        position_y = random.randint(-100, 1000)
+        position_y = random.randint(-100, 900)
         velocity_x = random.uniform(-1, 1)
         velocity_y = random.uniform(-1, 1)
 

@@ -7,7 +7,7 @@ import time
 
 # Importing the settings that are responsible for the game
 from game_settings.mine_manager import MineManager, BlobManager
-from game_settings.status import Points, Health
+from game_settings.status import Points, Health, Shield
 
 
 pg.init()
@@ -42,6 +42,7 @@ poäng = Points(screen)
 
 # Håll koll på hälsan!
 player_hp = Health(screen, 750, 25)
+player_shield = Shield(screen, 750, 50)
 
 
 # Player/Spelaren
@@ -96,7 +97,7 @@ x_down = False
 
 def reset_game():
     global gamestate, player_velocity_x, player_velocity_y, player_position_x, player_position_y
-    global left_pressed, right_pressed, up_pressed, down_pressed
+    global left_pressed, right_pressed, up_pressed, down_pressed, x_down
     time.sleep(3)
     player_velocity_x = 0
     player_velocity_y = 0
@@ -106,6 +107,7 @@ def reset_game():
     right_pressed = False
     up_pressed = False
     down_pressed = False
+    x_down = False
     gamestate = "ready!"
 
 
@@ -137,7 +139,7 @@ while True:
     elif gamestate == "running":
 
         # Create mine
-        if random.randint(1, 100) == 1:
+        if random.randint(1, 90) == 1:
             mine_manager.create_mine()
 
         if random.randint(1, 150) == 1:
@@ -252,19 +254,21 @@ while True:
                 G = 9
                 B = 9
                 screen.fill((179, 9, 9))
-                screen.fill((0, 0, 0))
 
         # Här gör vi samma sak som med minor
         for blob in blob_manager.blobs:
             if player_check_hit(blob.hitbox_blob()):
                 blob_manager.remove_blob(blob)
                 poäng.update_points()
+                player_shield.update_bar()
                 points_sound3.play()
+
+        if player_shield.check_bar():
+            player_shield.reset_bar()
+            player_hp.reset_hp()
 
         # If the points are dividid with 50 so the players hp will
         # be recovered
-        # if poäng.points != 0 and poäng.points % 50 == 0:
-        #     player_hp.recover_hp()
 
         # player hp
         hp = player_hp.health_length
@@ -278,7 +282,9 @@ while True:
         mine_manager.draw()
         blob_manager.draw_blob()
         poäng.draw_points()
+
         player_hp.draw_health()
+        player_shield.draw_bar()
         Clock.tick(1000)
         print(hp)
 
@@ -286,7 +292,8 @@ while True:
 
         if hp <= 0:
             reset_game()
-            player_hp.reset_bar()
+            player_hp.reset_hp()
+            player_shield.reset_bar()
             poäng.reset_points()
             mine_manager.reset_minor()
             blob_manager.reset_blob()
