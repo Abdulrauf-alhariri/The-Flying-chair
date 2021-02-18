@@ -64,8 +64,8 @@ class Health:
         percent_place = text.get_rect(topright=(970, self.position_y))
         self.screen.blit(text, percent_place)
 
-    def update_bar(self):
-        if self.health_length >= 0:
+    def update_bar(self, state):
+        if self.health_length >= 0 and state == True:
             self.health_length -= 8
             self.percent -= 2
 

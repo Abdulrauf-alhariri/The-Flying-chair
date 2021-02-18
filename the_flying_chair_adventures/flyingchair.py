@@ -3,6 +3,7 @@ import sys
 from pygame.locals import *
 import random
 import time
+from datetime import datetime, timedelta
 
 
 # Importing the settings that are responsible for the game
@@ -19,8 +20,18 @@ screen = pg.display.set_mode((width, height))
 # KONSTANTER
 FRICTION = 0.0005
 
+# Screen flash
+blinka_red = False
+blinka_blue = False
+repeat_red = 1
+repeat_blue = 1
+
 # We're gonna use this variable to observe the time in the game
 Clock = pg.time.Clock()
+
+# The power up variable
+power_ups = False
+repeat = 1
 
 # The game frames
 frames = 1000
@@ -43,6 +54,7 @@ poäng = Points(screen)
 # Håll koll på hälsan!
 player_hp = Health(screen, 750, 25)
 player_shield = Shield(screen, 750, 50)
+state = True
 
 
 # Player/Spelaren
@@ -193,17 +205,17 @@ while True:
 
         # Vilka knappar är nedtryckta just nu?
         if left_pressed:
-            player_velocity_x -= 0.05
+            player_velocity_x -= 0.09
             player_velocity_y = 0
 
         if right_pressed:
-            player_velocity_x += 0.05
+            player_velocity_x += 0.09
             player_velocity_y = 0
         if up_pressed:
-            player_velocity_y -= 0.05
+            player_velocity_y -= 0.09
             player_velocity_x = 0
         if down_pressed:
-            player_velocity_y += 0.05
+            player_velocity_y += 0.09
             player_velocity_x = 0
 
         # Minska hastigheten lite pga FRICTION
@@ -220,40 +232,58 @@ while True:
             player_velocity_y *= 0.01
 
         # If the player pass the borders
-        if player_position_x >= 1210:
-            player_position_x = -3
+        if player_position_x >= 1205:
+            player_position_x = -2
 
         if player_position_x <= -4:
-            player_position_x = 1205
+            player_position_x = 1203
 
-        if player_position_y <= -10:
-            player_position_y = 805
+        if player_position_y <= -5:
+            player_position_y = 804
 
-        if player_position_y >= 810:
+        if player_position_y >= 806:
             player_position_y = -1
 
         mine_manager.update()
 
+        # Här så kollar man om poöng är delbar med 100
+        if poäng.points > 1 and poäng.points % 20 == 0:
+            power_ups = True
+
+        # Om det är sant så blir det ett speciallt läge i tio sekunder
+        # Då förlorar man inga hp även om man krockar minor
+        if power_ups:
+            if repeat == 1:
+                power_up = datetime.now() + timedelta(seconds=10)
+                repeat -= 1
+
+            # Här kollar man om det har gått tio sekunder
+            if datetime.now() < power_up:
+                state = False
+
+            else:
+                power_ups = False
+                state = True
+                repeat = 1
         # RGB
         R = 0
         G = 0
         B = 0
         # Går igenom alla minor och undersöker om de krockar med spelaren
+
         for mine in mine_manager.mines:
             if player_check_hit(mine.hitbox()):
 
                 # When the player hits a mine so it disappers and a sound plays
                 # Also lose some hp and the game stops for 10 milliseconds
                 mine_manager.remove_mine(mine)
+                player_hp.update_bar(state)
 
-                player_hp.update_bar()
-                damage_sound3.play()
+                blinka_red = True
+                if state:
+                    damage_sound3.play()
+
                 pg.time.delay(100)
-
-                R = 179
-                G = 9
-                B = 9
-                screen.fill((179, 9, 9))
 
         # Här gör vi samma sak som med minor
         for blob in blob_manager.blobs:
@@ -262,13 +292,12 @@ while True:
                 poäng.update_points()
                 player_shield.update_bar()
                 points_sound3.play()
+                blinka_blue = True
 
+        # om shield bar är full, så fyller man hp fullt och shield bar blir tom
         if player_shield.check_bar():
             player_shield.reset_bar()
             player_hp.reset_hp()
-
-        # If the points are dividid with 50 so the players hp will
-        # be recovered
 
         # player hp
         hp = player_hp.health_length
@@ -285,11 +314,12 @@ while True:
 
         player_hp.draw_health()
         player_shield.draw_bar()
-        Clock.tick(1000)
+        # Clock.tick(1000)
         print(hp)
 
         pg.display.update()
 
+        # Här återställer man spelet.
         if hp <= 0:
             reset_game()
             player_hp.reset_hp()
@@ -297,3 +327,29 @@ while True:
             poäng.reset_points()
             mine_manager.reset_minor()
             blob_manager.reset_blob()
+
+        if blinka_red:
+            if repeat_red == 1:
+                time_left = datetime.now() + timedelta(milliseconds=50)
+                repeat_red -= 1
+
+            if datetime.now() < time_left:
+                screen.fill((179, 9, 9))
+                pg.display.update()
+
+            else:
+                blinka_red = False
+                repeat_red = 1
+
+        if blinka_blue:
+            if repeat_blue == 1:
+                time_left = datetime.now() + timedelta(milliseconds=50)
+                repeat_blue -= 1
+
+            if datetime.now() < time_left:
+                screen.fill((0, 138, 237))
+                pg.display.update()
+
+            else:
+                blinka_blue = False
+                repeat_blue = 1
