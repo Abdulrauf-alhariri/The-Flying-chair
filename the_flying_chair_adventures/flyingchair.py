@@ -269,7 +269,7 @@ while True:
         mine_manager.update()
 
         # Här så kollar man om poöng är delbar med 100
-        if poäng.points > 1 and poäng.points % 20 == 0:
+        if poäng.points > 1 and poäng.points % 100 == 0:
             power_ups = True
 
         # Om det är sant så blir det ett speciallt läge i tio sekunder
