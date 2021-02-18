@@ -26,6 +26,10 @@ blinka_blue = False
 repeat_red = 1
 repeat_blue = 1
 
+# Här kontrolerar man antal minor som ska ritas
+between = 90
+change_num = 1
+
 # We're gonna use this variable to observe the time in the game
 Clock = pg.time.Clock()
 
@@ -35,6 +39,9 @@ repeat = 1
 
 # The game frames
 frames = 1000
+
+# The player brightness
+transparency = 128
 
 # Håller koll på minor!
 mine_sprite = pg.image.load(
@@ -60,6 +67,12 @@ state = True
 # Player/Spelaren
 player_sprite = pg.image.load(
     "C:\\The-flying-chair-adventures-main\\game_images\\player_sprite.png").convert_alpha()
+player_sprite_v2 = player_sprite.copy().convert_alpha()
+
+# Here we are changing the brightness of the image
+player_sprite_v2.fill((155, 90, 0, 0), special_flags=pg.BLEND_ADD)
+
+
 player_position_x = 300
 player_position_y = 300
 player_velocity_x = 0
@@ -74,7 +87,11 @@ font = pg.font.SysFont("Comic Sans MS", 70)
 
 
 def draw_player():
-    screen.blit(player_sprite, (player_position_x, player_position_y))
+    if power_ups == False:
+        screen.blit(player_sprite, (player_position_x, player_position_y))
+
+    else:
+        screen.blit(player_sprite_v2, (player_position_x, player_position_y))
 
 
 # Rita "startmenyn"
@@ -86,7 +103,12 @@ def draw_title_screen():
 # Undersöker om spelaren krockar med ett annat objekt.
 # Returnerar True om krock, annars False.
 def player_check_hit(other_hitbox):
-    hitbox = player_sprite.get_rect()
+    if power_ups:
+        hitbox = player_sprite_v2.get_rect()
+
+    else:
+        hitbox = player_sprite.get_rect()
+
     hitbox.x = player_position_x
     hitbox.y = player_position_y
 
@@ -151,13 +173,13 @@ while True:
     elif gamestate == "running":
 
         # Create mine
-        if random.randint(1, 90) == 1:
+        if random.randint(1, between) == 1:
             mine_manager.create_mine()
 
-        if random.randint(1, 150) == 1:
+        if random.randint(1, 130) == 1:
             blob_manager.create_blob()
 
-        # For-loop - den där get() ger alltså en LISTA med händelser. Kolla vilken TYP
+        # For-loop - den där get() ger all tså en LISTA med händelser. Kolla vilken TYP
         for event in pg.event.get():
             if event.type == QUIT:
                 pg.quit()
@@ -265,6 +287,16 @@ while True:
                 power_ups = False
                 state = True
                 repeat = 1
+
+        # Här om antal poöng är delbar med 10 så ökar man antal minor som ska dycka up på skärmen
+        if poäng.points > 1 and poäng.points % 10 == 0:
+            if between > 0 and change_num == 1:
+                between -= 2
+                change_num -= 1
+
+        else:
+            change_num = 1
+
         # RGB
         R = 0
         G = 0
@@ -279,9 +311,9 @@ while True:
                 mine_manager.remove_mine(mine)
                 player_hp.update_bar(state)
 
-                blinka_red = True
                 if state:
                     damage_sound3.play()
+                    blinka_red = True
 
                 pg.time.delay(100)
 
@@ -294,7 +326,7 @@ while True:
                 points_sound3.play()
                 blinka_blue = True
 
-        # om shield bar är full, så fyller man hp fullt och shield bar blir tom
+        # om shield baren är full, så fyller man hp fullt och shield baren blir tom
         if player_shield.check_bar():
             player_shield.reset_bar()
             player_hp.reset_hp()
@@ -328,28 +360,28 @@ while True:
             mine_manager.reset_minor()
             blob_manager.reset_blob()
 
+        # Här blinkar skärmen rött om man förlorar hp
         if blinka_red:
             if repeat_red == 1:
-                time_left = datetime.now() + timedelta(milliseconds=50)
+                time_left = datetime.now() + timedelta(milliseconds=60)
                 repeat_red -= 1
 
             if datetime.now() < time_left:
                 screen.fill((179, 9, 9))
                 pg.display.update()
-
             else:
                 blinka_red = False
                 repeat_red = 1
 
+        # Här blinkar skärmen med blå om man träffar blob, får poäng
         if blinka_blue:
             if repeat_blue == 1:
-                time_left = datetime.now() + timedelta(milliseconds=50)
+                time_left = datetime.now() + timedelta(milliseconds=60)
                 repeat_blue -= 1
 
             if datetime.now() < time_left:
                 screen.fill((0, 138, 237))
                 pg.display.update()
-
             else:
                 blinka_blue = False
                 repeat_blue = 1
