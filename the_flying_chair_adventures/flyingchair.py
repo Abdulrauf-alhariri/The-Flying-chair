@@ -83,9 +83,8 @@ gamestate = 'ready!'
 # Text
 font = pg.font.SysFont("Comic Sans MS", 70)
 
+
 # draw the player
-
-
 def draw_player():
     if power_ups == False:
         screen.blit(player_sprite, (player_position_x, player_position_y))
@@ -227,17 +226,17 @@ while True:
 
         # Vilka knappar är nedtryckta just nu?
         if left_pressed:
-            player_velocity_x -= 0.09
+            player_velocity_x -= 0.05
             player_velocity_y = 0
 
         if right_pressed:
-            player_velocity_x += 0.09
+            player_velocity_x += 0.05
             player_velocity_y = 0
         if up_pressed:
-            player_velocity_y -= 0.09
+            player_velocity_y -= 0.05
             player_velocity_x = 0
         if down_pressed:
-            player_velocity_y += 0.09
+            player_velocity_y += 0.05
             player_velocity_x = 0
 
         # Minska hastigheten lite pga FRICTION
@@ -254,16 +253,16 @@ while True:
             player_velocity_y *= 0.01
 
         # If the player pass the borders
-        if player_position_x >= 1205:
+        if player_position_x >= 1203:
             player_position_x = -2
 
         if player_position_x <= -4:
-            player_position_x = 1203
+            player_position_x = 1201
 
         if player_position_y <= -5:
-            player_position_y = 804
+            player_position_y = 802
 
-        if player_position_y >= 806:
+        if player_position_y >= 804:
             player_position_y = -1
 
         mine_manager.update()
@@ -289,8 +288,9 @@ while True:
                 repeat = 1
 
         # Här om antal poöng är delbar med 10 så ökar man antal minor som ska dycka up på skärmen
+        # Change_num använder jag för att kolla att if statment fungerar bara en gång om poöng är delbar med 10
         if poäng.points > 1 and poäng.points % 10 == 0:
-            if between > 0 and change_num == 1:
+            if between > 4 and change_num == 1:
                 between -= 2
                 change_num -= 1
 
@@ -311,11 +311,11 @@ while True:
                 mine_manager.remove_mine(mine)
                 player_hp.update_bar(state)
 
+                # Här kollar man om power ups mode fungerar eller inte
                 if state:
                     damage_sound3.play()
                     blinka_red = True
-
-                pg.time.delay(100)
+                    pg.time.delay(100)
 
         # Här gör vi samma sak som med minor
         for blob in blob_manager.blobs:
@@ -379,6 +379,7 @@ while True:
                 time_left = datetime.now() + timedelta(milliseconds=60)
                 repeat_blue -= 1
 
+            # Om det inte har gått 60 milliseconder så fortsätter skärmen att blinka blått
             if datetime.now() < time_left:
                 screen.fill((0, 138, 237))
                 pg.display.update()
